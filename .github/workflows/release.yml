@@ -1,0 +1,131 @@
+name: Manual Build and Release Crunch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get_info:
+    runs-on: ubuntu-latest
+    outputs:
+      version_tag: ${{ steps.vars.outputs.version_tag }}
+      release_name: ${{ steps.vars.outputs.release_name }}
+      sha_short: ${{ steps.vars.outputs.sha_short }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+      - name: Set version and hash
+        id: vars
+        run: |
+          VERSION_DATE=$(date +'%Y.%m.%d')
+          echo "version_tag=$VERSION_DATE" >> $GITHUB_OUTPUT
+          echo "release_name=Release $VERSION_DATE" >> $GITHUB_OUTPUT
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+  build_windows:
+    needs: get_info
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.3.1
+      - name: Build
+        run: msbuild crunch.sln /p:Configuration=Release /p:Platform=x64
+      - name: Prepare Windows Artifact
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $ARTIFACT_STAGING_DIR = "build_output"
+          New-Item -ItemType Directory -Force -Path $ARTIFACT_STAGING_DIR
+          Copy-Item -Path "x64/Release/crunch.exe" -Destination "$ARTIFACT_STAGING_DIR/crunch.exe"
+          Compress-Archive -Path "$ARTIFACT_STAGING_DIR/crunch.exe" -DestinationPath "crunch-windows-${{ needs.get_info.outputs.version_tag }}.zip"
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crunch-windows
+          path: crunch-windows-${{ needs.get_info.outputs.version_tag }}.zip
+
+  build_linux:
+    needs: get_info
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y g++ zip
+      - name: Build Linux
+        run: |
+          mkdir -p build_output
+          g++ -std=c++11 -O3 -Icrunch \
+            crunch/main.cpp \
+            crunch/bitmap.cpp \
+            crunch/packer.cpp \
+            crunch/binary.cpp \
+            crunch/hash.cpp \
+            crunch/str.cpp \
+            crunch/lodepng.cpp \
+            crunch/GuillotineBinPack.cpp \
+            crunch/MaxRectsBinPack.cpp \
+            crunch/Rect.cpp \
+            -o build_output/crunch
+      - name: Archive Linux Release
+        run: |
+          (cd build_output && zip ../crunch-linux-${{ needs.get_info.outputs.version_tag }}.zip crunch)
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crunch-linux
+          path: crunch-linux-${{ needs.get_info.outputs.version_tag }}.zip
+
+  build_macos:
+    needs: get_info
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build macOS
+        run: |
+          mkdir -p build_output
+          clang++ -std=c++11 -O3 -Icrunch \
+            crunch/main.cpp \
+            crunch/bitmap.cpp \
+            crunch/packer.cpp \
+            crunch/binary.cpp \
+            crunch/hash.cpp \
+            crunch/str.cpp \
+            crunch/lodepng.cpp \
+            crunch/GuillotineBinPack.cpp \
+            crunch/MaxRectsBinPack.cpp \
+            crunch/Rect.cpp \
+            -o build_output/crunch
+      - name: Archive macOS Release
+        run: |
+          (cd build_output && zip ../crunch-macos-${{ needs.get_info.outputs.version_tag }}.zip crunch)
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crunch-macos
+          path: crunch-macos-${{ needs.get_info.outputs.version_tag }}.zip
+
+  create_release:
+    needs: [get_info, build_windows, build_linux, build_macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/ 
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get_info.outputs.version_tag }}
+          name: ${{ needs.get_info.outputs.release_name }}
+          body: |
+            Crunch build for ${{ needs.get_info.outputs.version_tag }}
+            Git commit: ${{ needs.get_info.outputs.sha_short }}
+          files: |
+            artifacts/crunch-windows/crunch-windows-${{ needs.get_info.outputs.version_tag }}.zip
+            artifacts/crunch-linux/crunch-linux-${{ needs.get_info.outputs.version_tag }}.zip
+            artifacts/crunch-macos/crunch-macos-${{ needs.get_info.outputs.version_tag }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
