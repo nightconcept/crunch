@@ -130,9 +130,9 @@ static string GetFileName(const string& path)
 static void LoadBitmap(const string& prefix, const string& path)
 {
     if (optVerbose)
-        cout << '\t' << PathToStr(path) << endl;
+        cout << '\t' << path << endl;
     
-    bitmaps.push_back(new Bitmap(PathToStr(path), prefix + GetFileName(PathToStr(path)), optPremultiply, optTrim));
+    bitmaps.push_back(new Bitmap(path, prefix + GetFileName(path), optPremultiply, optTrim));
 }
 
 static void LoadBitmaps(const string& root, const string& prefix)
