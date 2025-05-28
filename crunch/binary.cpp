@@ -26,6 +26,7 @@
 
 #include "binary.hpp"
 #include <iostream>
+#include <cstdint>
 
 void WriteString(ofstream& bin, const string& value)
 {
