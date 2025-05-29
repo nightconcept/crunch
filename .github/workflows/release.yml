@@ -5,6 +5,7 @@ on:
 
 jobs:
   get_info:
+    name: Get Version and SHA
     runs-on: ubuntu-latest
     outputs:
       version_tag: ${{ steps.vars.outputs.version_tag }}
@@ -23,6 +24,7 @@ jobs:
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
   build_windows:
+    name: Build Windows
     needs: get_info
     runs-on: windows-latest
     steps:
@@ -37,7 +39,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $ARTIFACT_STAGING_DIR = "build_output"
           New-Item -ItemType Directory -Force -Path $ARTIFACT_STAGING_DIR
-          Copy-Item -Path "x64/Release/crunch.exe" -Destination "$ARTIFACT_STAGING_DIR/crunch.exe"
+          Copy-Item -Path "build/x64/Release/crunch.exe" -Destination "$ARTIFACT_STAGING_DIR/crunch.exe"
           Compress-Archive -Path "$ARTIFACT_STAGING_DIR/crunch.exe" -DestinationPath "crunch-windows-${{ needs.get_info.outputs.version_tag }}.zip"
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
@@ -46,6 +48,7 @@ jobs:
           path: crunch-windows-${{ needs.get_info.outputs.version_tag }}.zip
 
   build_linux:
+    name: Build Linux
     needs: get_info
     runs-on: ubuntu-latest
     steps:
@@ -77,6 +80,7 @@ jobs:
           path: crunch-linux-${{ needs.get_info.outputs.version_tag }}.zip
 
   build_macos:
+    name: Build macOS
     needs: get_info
     runs-on: macos-latest
     steps:
@@ -106,6 +110,7 @@ jobs:
           path: crunch-macos-${{ needs.get_info.outputs.version_tag }}.zip
 
   create_release:
+    name: Create GitHub Release
     needs: [get_info, build_windows, build_linux, build_macos]
     runs-on: ubuntu-latest
     permissions:

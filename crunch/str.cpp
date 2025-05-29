@@ -117,14 +117,15 @@ string NormalizePath(const string& path)
 #endif
 
 #if defined _MSC_VER || defined __MINGW32__
-#include <direct.h> // For _mkdir, _wmkdir
-#include <sys/stat.h> // For _stat, stat
-#include <io.h> // For _access
+#include <direct.h>
+#include <sys/stat.h>
+#include <io.h>
 #else
-#include <sys/stat.h> // For mkdir, stat
-#include <unistd.h> // For access
+#include <sys/stat.h>
+#include <unistd.h>
 #endif
-#include <iostream> // For cerr
+#include <cstring>
+#include <iostream>
 
 void EnsureDirectoryExists(const string& path) {
     if (path.empty()) {
