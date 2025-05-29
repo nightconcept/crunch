@@ -49,5 +49,6 @@ devenv.local.nix
 
 sample
 output/
+build/
 
 .vs/

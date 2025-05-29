@@ -115,3 +115,94 @@ string NormalizePath(const string& path)
     return tempPath;
 }
 #endif
+
+#if defined _MSC_VER || defined __MINGW32__
+#include <direct.h> // For _mkdir, _wmkdir
+#include <sys/stat.h> // For _stat, stat
+#include <io.h> // For _access
+#else
+#include <sys/stat.h> // For mkdir, stat
+#include <unistd.h> // For access
+#endif
+#include <iostream> // For cerr
+
+void EnsureDirectoryExists(const string& path) {
+    if (path.empty()) {
+        return;
+    }
+
+    string normalizedPath = path; // Use a mutable copy
+    // Ensure consistent forward slashes
+    for (char& c : normalizedPath) {
+        if (c == '\\') {
+            c = '/';
+        }
+    }
+    // Remove trailing slash if present, as we process segments
+    if (normalizedPath.back() == '/') {
+        normalizedPath.pop_back();
+        if (normalizedPath.empty()) return; // Path was just "/" or "\"
+    }
+
+    size_t pos = 0;
+    string current_path_segment;
+
+    // Iterate through path segments and create them if they don't exist
+    while ((pos = normalizedPath.find('/', pos)) != string::npos) {
+        current_path_segment = normalizedPath.substr(0, pos);
+        if (!current_path_segment.empty()) {
+            // Skip drive letters like "C:"
+            if (current_path_segment.length() == 2 && current_path_segment[1] == ':') {
+                pos++;
+                continue;
+            }
+            #if defined _MSC_VER || defined __MINGW32__
+                // Check if directory exists
+                struct _stat info;
+                if (_wstat(StrToPath(current_path_segment).c_str(), &info) != 0) { // Path doesn't exist
+                    if (_wmkdir(StrToPath(current_path_segment).c_str()) != 0) {
+                        cerr << "Error creating directory (segment): " << current_path_segment << " (Error: " << strerror(errno) << ")" << endl;
+                        // Optionally, throw an exception or return an error code
+                        return;
+                    }
+                } else if (!(info.st_mode & S_IFDIR)) { // Path exists but is not a directory
+                    cerr << "Error: Path exists but is not a directory: " << current_path_segment << endl;
+                    return;
+                }
+            #else
+                struct stat info;
+                if (stat(current_path_segment.c_str(), &info) != 0) { // Path doesn't exist
+                    if (mkdir(current_path_segment.c_str(), 0777) != 0 && errno != EEXIST) { // Check EEXIST in case of race condition
+                        cerr << "Error creating directory (segment): " << current_path_segment << " (Error: " << strerror(errno) << ")" << endl;
+                        return;
+                    }
+                } else if (!S_ISDIR(info.st_mode)) { // Path exists but is not a directory
+                    cerr << "Error: Path exists but is not a directory: " << current_path_segment << endl;
+                    return;
+                }
+            #endif
+        }
+        pos++; // Move past the found slash
+    }
+
+    // Create the final directory component (the full path)
+    #if defined _MSC_VER || defined __MINGW32__
+        struct _stat info;
+        if (_wstat(StrToPath(normalizedPath).c_str(), &info) != 0) {
+            if (_wmkdir(StrToPath(normalizedPath).c_str()) != 0) {
+                cerr << "Error creating directory (final): " << normalizedPath << " (Error: " << strerror(errno) << ")" << endl;
+            }
+        } else if (!(info.st_mode & S_IFDIR)) {
+             cerr << "Error: Path exists but is not a directory: " << normalizedPath << endl;
+        }
+    #else
+        struct stat info;
+        if (stat(normalizedPath.c_str(), &info) != 0) {
+            if (mkdir(normalizedPath.c_str(), 0777) != 0 && errno != EEXIST) {
+                 cerr << "Error creating directory (final): " << normalizedPath << " (Error: " << strerror(errno) << ")" << endl;
+            }
+        } else if (!S_ISDIR(info.st_mode)) {
+            cerr << "Error: Path exists but is not a directory: " << normalizedPath << endl;
+        }
+    #endif
+}

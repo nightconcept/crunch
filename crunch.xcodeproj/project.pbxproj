@@ -273,6 +273,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				CONFIGURATION_BUILD_DIR = "$(SRCROOT)/../build/$(CONFIGURATION)";
+				OBJECT_FILE_DIR = "$(SRCROOT)/../build/obj/$(CONFIGURATION)/$(TARGET_NAME).build";
 			};
 			name = Debug;
 		};
@@ -281,6 +283,8 @@
 			buildSettings = {
 				GCC_OPTIMIZATION_LEVEL = fast;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				CONFIGURATION_BUILD_DIR = "$(SRCROOT)/../build/$(CONFIGURATION)";
+				OBJECT_FILE_DIR = "$(SRCROOT)/../build/obj/$(CONFIGURATION)/$(TARGET_NAME).build";
 			};
 			name = Release;
 		};

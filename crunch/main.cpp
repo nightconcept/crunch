@@ -259,6 +259,10 @@ int main(int argc, const char* argv[])
     if (!outputDir.empty() && outputDir.back() != '/') {
         outputDir += '/';
     }
+    // Ensure the output directory exists before trying to write files into it.
+    if (!outputDir.empty()) { // Don't try to create if outputDir is empty (e.g. outputting to current dir)
+        EnsureDirectoryExists(outputDir);
+    }
     
     //Get all the input files and directories
     vector<string> inputs;

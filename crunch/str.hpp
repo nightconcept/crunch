@@ -43,4 +43,7 @@ const string& PathToStr(const string& str);
 // Normalizes a path, converting to absolute and resolving . and ..
 string NormalizePath(const string& path);
 
+// Ensures the specified directory path exists, creating it if necessary (including parent directories)
+void EnsureDirectoryExists(const string& path);
+
 #endif
