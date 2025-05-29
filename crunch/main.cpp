@@ -26,10 +26,10 @@
  ====================================
  
  usage:
-    crunch [OUTPUT] [INPUT1,INPUT2,INPUT3...] [OPTIONS...]
+    crunch -o <OUTPUT_PREFIX> -i <INPUT_DIR1,INPUT_DIR2,...> [OPTIONS...]
  
  example:
-    crunch bin/atlases/atlas assets/characters,assets/tiles -p -t -v -u -r
+    crunch -o bin/atlases/atlas -i assets/characters,assets/tiles -p -t -v -u -r
  
  options:
     -d  --default           use default settings (-x -p -t -u)
@@ -141,20 +141,31 @@ static void LoadBitmaps(const string& root, const string& prefix)
     static string dot2 = "..";
     
     tinydir_dir dir;
-    tinydir_open(&dir, StrToPath(root).data());
+    // root is expected to be a normalized std::string.
+    // tinydir_open on Windows (with UNICODE) expects const wchar_t*.
+    if (tinydir_open(&dir, StrToPath(root).c_str()) == -1) {
+        cerr << "Error opening directory: " << root << endl;
+        return;
+    }
     
     while (dir.has_next)
     {
         tinydir_file file;
         tinydir_readfile(&dir, &file);
         
+        // file.name, file.path, file.extension are TCHAR[] (wchar_t[] on Windows UNICODE)
+        // Convert them back to std::string using PathToStr
+        string current_file_name = PathToStr(file.name);
+        string current_file_path = PathToStr(file.path);
+        string current_file_ext = PathToStr(file.extension);
+
         if (file.is_dir)
         {
-            if (dot1 != PathToStr(file.name) && dot2 != PathToStr(file.name))
-                LoadBitmaps(PathToStr(file.path), prefix + PathToStr(file.name) + "/");
+            if (dot1 != current_file_name && dot2 != current_file_name)
+                LoadBitmaps(current_file_path, prefix + current_file_name + "/");
         }
-        else if (PathToStr(file.extension) == "png")
-            LoadBitmap(prefix, PathToStr(file.path));
+        else if (current_file_ext == "png") // PathToStr(file.extension) gives "png"
+            LoadBitmap(prefix, current_file_path);
         
         tinydir_next(&dir);
     }
@@ -204,25 +215,73 @@ int main(int argc, const char* argv[])
     for (int i = 0; i < argc; ++i)
         cout << argv[i] << ' ';
     cout << endl;
-    
-    if (argc < 3)
-    {
-        cerr << "invalid input, expected: \"crunch [INPUT DIRECTORY] [OUTPUT PREFIX] [OPTIONS...]\"" << endl;
+
+    string rawOutputPathStr; // Store the raw path first
+    string rawInputPathStr;  // Store the raw path first
+    vector<string> cli_options;
+
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "-o") {
+            if (i + 1 < argc) {
+                rawOutputPathStr = argv[++i];
+            } else {
+                cerr << "Error: -o option requires a value." << endl;
+                // Usage string will be printed by the later check
+                return EXIT_FAILURE;
+            }
+        } else if (arg == "-i") {
+            if (i + 1 < argc) {
+                rawInputPathStr = argv[++i];
+            } else {
+                cerr << "Error: -i option requires a value." << endl;
+                // Usage string will be printed by the later check
+                return EXIT_FAILURE;
+            }
+        } else {
+            cli_options.push_back(arg);
+        }
+    }
+
+    string usage_string = "usage:\n   crunch -o <OUTPUT_PREFIX> -i <INPUT_DIR1,INPUT_DIR2,...> [OPTIONS...]\n\nexample:\n   crunch -o bin/atlases/atlas -i assets/characters,assets/tiles -p -t -v -u -r\n\noptions:\n   -d  --default           use default settings (-x -p -t -u)\n   -x  --xml               saves the atlas data as a .xml file\n   -b  --binary            saves the atlas data as a .bin file\n   -j  --json              saves the atlas data as a .json file\n   -p  --premultiply       premultiplies the pixels of the bitmaps by their alpha channel\n   -t  --trim              trims excess transparency off the bitmaps\n   -v  --verbose           print to the debug console as the packer works\n   -f  --force             ignore the hash, forcing the packer to repack\n   -u  --unique            remove duplicate bitmaps from the atlas\n   -r  --rotate            enabled rotating bitmaps 90 degrees clockwise when packing\n   -s# --size#             max atlas size (# can be 4096, 2048, 1024, 512, 256, 128, or 64)\n   -p# --pad#              padding between images (# can be from 0 to 16)";
+
+    if (rawOutputPathStr.empty() || rawInputPathStr.empty()) { // Check raw paths
+        cerr << "Error: Both -o (output prefix) and -i (input directories) arguments are required." << endl;
+        cerr << usage_string << endl;
         return EXIT_FAILURE;
     }
-    
+
+    string outputPathStr = NormalizePath(rawOutputPathStr); // Normalize after check
+
     //Get the output directory and name
     string outputDir, name;
-    SplitFileName(argv[1], &outputDir, &name, nullptr);
+    SplitFileName(outputPathStr, &outputDir, &name, nullptr); // Use normalized outputPathStr
+    if (!outputDir.empty() && outputDir.back() != '/') {
+        outputDir += '/';
+    }
     
     //Get all the input files and directories
     vector<string> inputs;
-    stringstream ss(argv[2]);
+    stringstream ss(rawInputPathStr); // Parse the raw input string for inputs
     while (ss.good())
     {
-        string inputStr;
-        getline(ss, inputStr, ',');
-        inputs.push_back(inputStr);
+        string inputStrItem;
+        getline(ss, inputStrItem, ',');
+        if (!inputStrItem.empty()) {
+            string normalizedInput = NormalizePath(inputStrItem);
+            // Ensure input directories end with a slash for consistency.
+            // tinydir_open might be fine without it, but LoadBitmaps and HashFiles might expect it.
+            if (!normalizedInput.empty() && normalizedInput.back() != '/') {
+                normalizedInput += '/';
+            }
+            inputs.push_back(normalizedInput);
+        }
+    }
+
+    if (inputs.empty()) {
+        cerr << "Error: No input directories specified with -i value." << endl;
+        cerr << usage_string << endl;
+        return EXIT_FAILURE;
     }
     
     //Get the options
@@ -236,9 +295,8 @@ int main(int argc, const char* argv[])
     optVerbose = false;
     optForce = false;
     optUnique = false;
-    for (int i = 3; i < argc; ++i)
+    for (const string& arg : cli_options)
     {
-        string arg = argv[i];
         if (arg == "-d" || arg == "--default")
             optXml = optPremultiply = optTrim = optUnique = true;
         else if (arg == "-x" || arg == "--xml")
@@ -276,8 +334,27 @@ int main(int argc, const char* argv[])
     
     //Hash the arguments and input directories
     size_t newHash = 0;
-    for (int i = 1; i < argc; ++i)
-        HashString(newHash, argv[i]);
+    // Hash the canonical output and input path strings
+    HashString(newHash, outputPathStr); // outputPathStr is already normalized
+
+    // Create a single, sorted string of normalized input paths for hashing
+    // This ensures the hash is consistent regardless of original input order or relative/absolute parts.
+    string allNormalizedInputsForHash;
+    vector<string> sorted_normalized_inputs = inputs; // 'inputs' vector now holds normalized paths
+    sort(sorted_normalized_inputs.begin(), sorted_normalized_inputs.end());
+    for(const string& s : sorted_normalized_inputs) {
+        allNormalizedInputsForHash += s; // Concatenate them; comma was for parsing, not essential for hash string
+    }
+    HashString(newHash, allNormalizedInputsForHash);
+
+    // Sort other_options to make hash order-independent for options, then hash them
+    vector<string> sorted_cli_options = cli_options;
+    sort(sorted_cli_options.begin(), sorted_cli_options.end());
+    for (const string& opt : sorted_cli_options) {
+        HashString(newHash, opt);
+    }
+
+    // Hash the content of input files/directories (this part remains the same)
     for (size_t i = 0; i < inputs.size(); ++i)
     {
         if (inputs[i].rfind('.') == string::npos)
@@ -376,9 +453,16 @@ int main(int argc, const char* argv[])
     //Save the atlas image
     for (size_t i = 0; i < packers.size(); ++i)
     {
+        string currentPngFileName = outputDir + name;
+        if (packers.size() > 1)
+        {
+            currentPngFileName += to_string(i);
+        }
+        currentPngFileName += ".png";
+
         if (optVerbose)
-            cout << "writing png: " << outputDir << name << to_string(i) << ".png" << endl;
-        packers[i]->SavePng(outputDir + name + to_string(i) + ".png");
+            cout << "writing png: " << currentPngFileName << endl;
+        packers[i]->SavePng(currentPngFileName);
     }
     
     //Save the atlas binary

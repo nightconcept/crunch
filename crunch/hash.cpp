@@ -70,20 +70,32 @@ void HashFiles(size_t& hash, const string& root)
     static string dot2 = "..";
     
     tinydir_dir dir;
-    tinydir_open(&dir, StrToPath(root).data());
+    // root is expected to be a normalized std::string.
+    // tinydir_open on Windows (with UNICODE) expects const wchar_t*.
+    if (tinydir_open(&dir, StrToPath(root).c_str()) == -1) {
+        cerr << "Error opening directory for hashing: " << root << endl;
+        return;
+    }
     
     while (dir.has_next)
     {
         tinydir_file file;
         tinydir_readfile(&dir, &file);
         
+        // file.name, file.path, file.extension are TCHAR[] (wchar_t[] on Windows UNICODE)
+        // Convert them back to std::string using PathToStr
+        string current_file_name = PathToStr(file.name);
+        string current_file_path = PathToStr(file.path);
+        string current_file_ext = PathToStr(file.extension);
+
+
         if (file.is_dir)
         {
-            if (dot1 != PathToStr(file.name) && dot2 != PathToStr(file.name))
-                HashFiles(hash, PathToStr(file.path));
+            if (dot1 != current_file_name && dot2 != current_file_name)
+                HashFiles(hash, current_file_path); // current_file_path is now std::string
         }
-        else if (PathToStr(file.extension) == "png")
-            HashFile(hash, PathToStr(file.path));
+        else if (current_file_ext == "png") // PathToStr(file.extension) gives "png" not ".png"
+            HashFile(hash, current_file_path);
         
         tinydir_next(&dir);
     }

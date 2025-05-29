@@ -40,4 +40,7 @@ const string& StrToPath(const string& str);
 const string& PathToStr(const string& str);
 #endif
 
+// Normalizes a path, converting to absolute and resolving . and ..
+string NormalizePath(const string& path);
+
 #endif
