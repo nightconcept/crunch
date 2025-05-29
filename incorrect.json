@@ -1,0 +1,29 @@
+{
+	"textures":[
+		{
+			"name":"atlas0",
+			"images":[
+				{ "n":"Orc(Split Effects)/Orc", "x":0, "y":0, "w":800, "h":600 },
+				{ "n":"Orc with shadows/Orc", "x":801, "y":0, "w":800, "h":600 },
+				{ "n":"Orc/Orc", "x":1602, "y":0, "w":800, "h":600 },
+				{ "n":"Orc with shadows/Orc-Walk", "x":2403, "y":0, "w":800, "h":100 },
+				{ "n":"Orc/Orc-Walk", "x":3204, "y":0, "w":800, "h":100 },
+				{ "n":"Orc(Split Effects)/Orc-attack02_Effect", "x":2403, "y":101, "w":600, "h":100 },
+				{ "n":"Orc(Split Effects)/Orc-attack01_Effect", "x":3004, "y":101, "w":600, "h":100 },
+				{ "n":"Orc with shadows/Orc-Idle", "x":2403, "y":202, "w":600, "h":100 },
+				{ "n":"Orc with shadows/Orc-Attack02", "x":3004, "y":202, "w":600, "h":100 },
+				{ "n":"Orc with shadows/Orc-Attack01", "x":2403, "y":303, "w":600, "h":100 },
+				{ "n":"Orc/Shadow sprites/Orc-shadow_attack02", "x":3004, "y":303, "w":600, "h":100 },
+				{ "n":"Orc/Orc-Idle", "x":2403, "y":404, "w":600, "h":100 },
+				{ "n":"Orc/Orc-Attack02", "x":3004, "y":404, "w":600, "h":100 },
+				{ "n":"Orc/Orc-Attack01", "x":2403, "y":505, "w":600, "h":100 },
+				{ "n":"Orc with shadows/Orc-Hurt", "x":3605, "y":101, "w":400, "h":100 },
+				{ "n":"Orc with shadows/Orc-Death", "x":3605, "y":202, "w":400, "h":100 },
+				{ "n":"Orc/Shadow sprites/Orc-shadow_death", "x":3605, "y":303, "w":400, "h":100 },
+				{ "n":"Orc/Orc-Hurt", "x":3605, "y":404, "w":400, "h":100 },
+				{ "n":"Orc/Orc-Death", "x":3004, "y":505, "w":400, "h":100 },
+				{ "n":"Orc/Shadow sprites/Orc-shadow", "x":3405, "y":505, "w":100, "h":100 }
+			]
+		}
+	]
+}

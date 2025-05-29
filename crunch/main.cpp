@@ -330,9 +330,14 @@ int main(int argc, const char* argv[])
     RemoveFile(outputDir + name + ".hash");
     RemoveFile(outputDir + name + ".bin");
     RemoveFile(outputDir + name + ".xml");
+    // Remove single json file from previous run
     RemoveFile(outputDir + name + ".json");
-    for (size_t i = 0; i < 16; ++i)
+    // Remove potentially multiple json files from previous run (e.g., atlas0.json, atlas1.json)
+    for (size_t i = 0; i < 16; ++i) // Assuming max 16 pages for cleanup, same as pngs
+    {
+        RemoveFile(outputDir + name + to_string(i) + ".json");
         RemoveFile(outputDir + name + to_string(i) + ".png");
+    }
     
     //Load the bitmaps from all the input files and directories
     if (optVerbose)
@@ -405,23 +410,32 @@ int main(int argc, const char* argv[])
     //Save the atlas json
     if (optJson)
     {
-        if (optVerbose)
-            cout << "writing json: " << outputDir << name << ".json" << endl;
-        
-        ofstream json(outputDir + name + ".json");
-        json << '{' << endl;
-        json << "\t\"textures\":[" << endl;
         for (size_t i = 0; i < packers.size(); ++i)
         {
-            json << "\t\t{" << endl;
-            packers[i]->SaveJson(name + to_string(i), json, optTrim, optRotate);
-            json << "\t\t}";
-            if (i + 1 < packers.size())
-                json << ',';
-            json << endl;
+            string currentJsonFileName = outputDir + name;
+            string currentAtlasNameBase = name;
+
+            if (packers.size() > 1)
+            {
+                currentJsonFileName += to_string(i);
+                currentAtlasNameBase += to_string(i);
+            }
+            currentJsonFileName += ".json";
+            string internalAtlasName = currentAtlasNameBase + "_atlas";
+
+            if (optVerbose)
+                cout << "writing json: " << currentJsonFileName << " (Atlas Name: " << internalAtlasName << ")" << endl;
+            
+            ofstream jsonFile(currentJsonFileName);
+            if (!jsonFile.is_open())
+            {
+                cerr << "Failed to open json file for writing: " << currentJsonFileName << endl;
+                // Potentially skip or return EXIT_FAILURE
+                continue;
+            }
+            packers[i]->SaveJson(internalAtlasName, jsonFile, optTrim, optRotate);
+            jsonFile.close();
         }
-        json << "\t]" << endl;
-        json << '}';
     }
     
     //Save the new hash

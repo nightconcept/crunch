@@ -163,31 +163,46 @@ void Packer::SaveBin(const string& name, ofstream& bin, bool trim, bool rotate)
     }
 }
 
-void Packer::SaveJson(const string& name, ofstream& json, bool trim, bool rotate)
+void Packer::SaveJson(const string& atlasName, ofstream& json, bool trim, bool rotate)
 {
-    json << "\t\t\t\"name\":\"" << name << "\"," << endl;
-    json << "\t\t\t\"images\":[" << endl;
+    // The 'trim' parameter is kept for signature consistency with SaveXml/SaveBin,
+    // but trim-related fields are now always output in JSON.
+    // The 'rotate' parameter is used to determine packed W/H if points[i].rot is true.
+
+    json << "{" << endl;
+    json << "\t\"Name\": \"" << atlasName << "\"," << endl;
+    json << "\t\"Width\": " << this->width << "," << endl;
+    json << "\t\"Height\": " << this->height << "," << endl;
+    json << "\t\"Images\": [" << endl;
+
     for (size_t i = 0, j = bitmaps.size(); i < j; ++i)
     {
-        json << "\t\t\t\t{ ";
-        json << "\"n\":\"" << bitmaps[i]->name << "\", ";
-        json << "\"x\":" << points[i].x << ", ";
-        json << "\"y\":" << points[i].y << ", ";
-        json << "\"w\":" << bitmaps[i]->width << ", ";
-        json << "\"h\":" << bitmaps[i]->height;
-        if (trim)
+        json << "\t\t{" << endl;
+        // Assuming bitmaps[i]->name is "RelativePath/FilenameWithoutExtension"
+        // and we need to append ".png" as per example.json.
+        json << "\t\t\t\"Name\": \"" << bitmaps[i]->name << ".png" << "\"," << endl;
+        json << "\t\t\t\"X\": " << points[i].x << "," << endl;
+        json << "\t\t\t\"Y\": " << points[i].y << "," << endl;
+
+        // Calculate packed width and height based on rotation
+        int packedW = points[i].rot ? bitmaps[i]->height : bitmaps[i]->width;
+        int packedH = points[i].rot ? bitmaps[i]->width : bitmaps[i]->height;
+        json << "\t\t\t\"W\": " << packedW << "," << endl;
+        json << "\t\t\t\"H\": " << packedH << "," << endl;
+
+        // Output trim-related fields with new names, unconditionally
+        json << "\t\t\t\"TrimOffsetX\": " << bitmaps[i]->frameX << "," << endl;
+        json << "\t\t\t\"TrimOffsetY\": " << bitmaps[i]->frameY << "," << endl;
+        json << "\t\t\t\"UntrimmedWidth\": " << bitmaps[i]->frameW << "," << endl;
+        json << "\t\t\t\"UntrimmedHeight\": " << bitmaps[i]->frameH << endl; // Last field, no comma
+
+        json << "\t\t}";
+        if (i < j - 1)
         {
-            json << ", \"fx\":" << bitmaps[i]->frameX << ", ";
-            json << "\"fy\":" << bitmaps[i]->frameY << ", ";
-            json << "\"fw\":" << bitmaps[i]->frameW << ", ";
-            json << "\"fh\":" << bitmaps[i]->frameH;
-        }
-        if (rotate)
-            json << ", \"r\":" << (points[i].rot ? "true" : "false");
-        json << " }";
-        if(i != bitmaps.size() -1)
             json << ",";
+        }
         json << endl;
     }
-    json << "\t\t\t]" << endl;
+    json << "\t]" << endl;
+    json << "}" << endl;
 }

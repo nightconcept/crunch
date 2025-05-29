@@ -1,0 +1,227 @@
+{
+	"Name": "sample_atlas",
+	"Width": 2048,
+	"Height": 2048,
+	"Images": [
+		{
+			"Name": "Orc/Orc-Attack01.png",
+			"X": 1448,
+			"Y": 95,
+			"W": 527,
+			"H": 29,
+			"TrimOffsetX": -44,
+			"TrimOffsetY": -33,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Orc-Attack02.png",
+			"X": 1448,
+			"Y": 33,
+			"W": 518,
+			"H": 33,
+			"TrimOffsetX": -44,
+			"TrimOffsetY": -33,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Orc-Death.png",
+			"X": 1448,
+			"Y": 180,
+			"W": 321,
+			"H": 18,
+			"TrimOffsetX": -44,
+			"TrimOffsetY": -39,
+			"UntrimmedWidth": 400,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Orc-Hurt.png",
+			"X": 1448,
+			"Y": 216,
+			"W": 323,
+			"H": 15,
+			"TrimOffsetX": -42,
+			"TrimOffsetY": -42,
+			"UntrimmedWidth": 400,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Orc-Idle.png",
+			"X": 1448,
+			"Y": 143,
+			"W": 522,
+			"H": 16,
+			"TrimOffsetX": -44,
+			"TrimOffsetY": -41,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Orc-Walk.png",
+			"X": 0,
+			"Y": 538,
+			"W": 722,
+			"H": 16,
+			"TrimOffsetX": -44,
+			"TrimOffsetY": -41,
+			"UntrimmedWidth": 800,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Orc.png",
+			"X": 724,
+			"Y": 0,
+			"W": 724,
+			"H": 516,
+			"TrimOffsetX": -42,
+			"TrimOffsetY": -41,
+			"UntrimmedWidth": 800,
+			"UntrimmedHeight": 600
+		},
+		{
+			"Name": "Orc/Shadow sprites/Orc-shadow.png",
+			"X": 1967,
+			"Y": 0,
+			"W": 15,
+			"H": 5,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -55,
+			"UntrimmedWidth": 100,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Shadow sprites/Orc-shadow_attack02.png",
+			"X": 1448,
+			"Y": 231,
+			"W": 515,
+			"H": 5,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -55,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc/Shadow sprites/Orc-shadow_death.png",
+			"X": 1448,
+			"Y": 236,
+			"W": 321,
+			"H": 5,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -55,
+			"UntrimmedWidth": 400,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc with shadows/Orc-Attack01.png",
+			"X": 1448,
+			"Y": 66,
+			"W": 528,
+			"H": 29,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -33,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc with shadows/Orc-Attack02.png",
+			"X": 1448,
+			"Y": 0,
+			"W": 519,
+			"H": 33,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -33,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc with shadows/Orc-Death.png",
+			"X": 1448,
+			"Y": 159,
+			"W": 322,
+			"H": 21,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -39,
+			"UntrimmedWidth": 400,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc with shadows/Orc-Hurt.png",
+			"X": 1448,
+			"Y": 198,
+			"W": 323,
+			"H": 18,
+			"TrimOffsetX": -42,
+			"TrimOffsetY": -42,
+			"UntrimmedWidth": 400,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc with shadows/Orc-Idle.png",
+			"X": 1448,
+			"Y": 124,
+			"W": 523,
+			"H": 19,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -41,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc with shadows/Orc-Walk.png",
+			"X": 0,
+			"Y": 519,
+			"W": 723,
+			"H": 19,
+			"TrimOffsetX": -43,
+			"TrimOffsetY": -41,
+			"UntrimmedWidth": 800,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc with shadows/Orc.png",
+			"X": 0,
+			"Y": 0,
+			"W": 724,
+			"H": 519,
+			"TrimOffsetX": -42,
+			"TrimOffsetY": -41,
+			"UntrimmedWidth": 800,
+			"UntrimmedHeight": 600
+		},
+		{
+			"Name": "Orc(Split Effects)/Orc-attack01_Effect.png",
+			"X": 1884,
+			"Y": 159,
+			"W": 118,
+			"H": 26,
+			"TrimOffsetX": -355,
+			"TrimOffsetY": -36,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc(Split Effects)/Orc-attack02_Effect.png",
+			"X": 1770,
+			"Y": 159,
+			"W": 114,
+			"H": 30,
+			"TrimOffsetX": -353,
+			"TrimOffsetY": -36,
+			"UntrimmedWidth": 600,
+			"UntrimmedHeight": 100
+		},
+		{
+			"Name": "Orc(Split Effects)/Orc.png",
+			"X": 724,
+			"Y": 516,
+			"W": 724,
+			"H": 516,
+			"TrimOffsetX": -42,
+			"TrimOffsetY": -41,
+			"UntrimmedWidth": 800,
+			"UntrimmedHeight": 600
+		}
+	]
+}
