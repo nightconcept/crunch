@@ -154,7 +154,7 @@ static void LoadBitmaps(const string& root, const string& prefix)
                 LoadBitmaps(PathToStr(file.path), prefix + PathToStr(file.name) + "/");
         }
         else if (PathToStr(file.extension) == "png")
-            LoadBitmap(prefix, file.path);
+            LoadBitmap(prefix, PathToStr(file.path));
         
         tinydir_next(&dir);
     }
